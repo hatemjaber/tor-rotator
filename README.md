@@ -21,3 +21,19 @@ The Tor Rotator is a Dockerized solution that provides easy and secure access to
 3. Utilize the provided Python script to rotate your Tor identity.
 
 **Note:** Ensure you have Docker installed to use this service. For detailed usage instructions and configuration options, please refer to the documentation.
+
+**docker-compose.yml sample usage:**
+
+```
+version: '3.9'
+
+services:
+  tor-service-test:
+    image: hatemjaber/tor-rotator
+    container_name: tor-service-test
+    hostname: tor-service-test
+    ports:
+      - "9050:9050" # Socks Proxy
+      - "9051:9051" # Control Port
+    # restart: always
+```
