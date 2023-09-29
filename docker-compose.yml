@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  tor-service:
+    container_name: tor-service
+    build: .
+    ports:
+      - "9050:9050" # Socks Proxy
+      - "9051:9051" # Control Port
+    # restart: always
