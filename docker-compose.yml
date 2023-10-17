@@ -5,6 +5,6 @@ services:
     container_name: tor-service
     build: .
     ports:
-      - "9050:9050" # Socks Proxy
-      - "9051:9051" # Control Port
-    # restart: always
+      - "9000:9000" # HAProxy Port
+    environment:
+      - NUM_TOR_INSTANCES=2 # Number of Tor instances you want to run default is 5
