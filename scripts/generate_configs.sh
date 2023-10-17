@@ -2,7 +2,7 @@
 
 # Set the number of Tor instances; default to 5 if no argument is provided.
 # This sets the number of Tor instances you'll be running.
-NUM_TOR_INSTANCES=${1:-5}
+NUM_TOR_INSTANCES=${$NUM_TOR_INSTANCES:-5}
 
 # The hashed password for Tor authentication.
 # This password will be used to authenticate against the Tor ControlPort.
