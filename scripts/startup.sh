@@ -7,8 +7,9 @@ NUM_TOR_INSTANCES=${NUM_TOR_INSTANCES:-5}
 PASSWORD=$(openssl rand -base64 16)
 HASHED_PASSWORD=$(tor --hash-password "$PASSWORD" | tail -n 1)
 
-# Save credentials
+# Save credentials securely
 echo "Password: $PASSWORD" > /app/credentials.txt
+chmod 600 /app/credentials.txt
 echo "HashedPassword: $HASHED_PASSWORD" >> /app/credentials.txt
 
 # Generate Tor configurations dynamically
@@ -17,10 +18,15 @@ echo "HashedPassword: $HASHED_PASSWORD" >> /app/credentials.txt
 # Start cron service
 cron
 
-# Start multiple Tor services, skip 2 each time (e.g., 9050, 9052, 9054, etc.)
+# Clear PID files
+> tor_pids.txt
+> privoxy_pids.txt
+
+# Start multiple Tor and Privoxy instances
 for i in $(seq 0 2 $(($NUM_TOR_INSTANCES * 2 - 2))); do
     tor -f /etc/tor/torrc_$((i/2)) &
-    sleep 5
+    sleep 2
+    /usr/sbin/privoxy --no-daemon /etc/privoxy/config_$((i/2)) &
 done
 
 # Start HAProxy

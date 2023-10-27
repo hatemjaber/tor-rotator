@@ -2,7 +2,7 @@
 FROM debian:buster-slim
 
 # Install necessary packages: Tor, Python3, pip for Python3, cron, and haproxy
-RUN apt-get update && apt-get install -y tor python3 python3-pip cron haproxy net-tools
+RUN apt-get update && apt-get install -y tor python3 python3-pip cron haproxy net-tools privoxy
 
 # Set working directory
 WORKDIR /app
