@@ -1,8 +1,8 @@
 # Use Debian Buster Slim as the base image
-FROM debian:buster-slim
+FROM debian:bookworm-slim
 
 # Install necessary packages: Tor, Python3, pip for Python3, cron, and haproxy
-RUN apt-get update && apt-get install -y tor python3 python3-pip cron haproxy net-tools privoxy
+RUN apt-get update && apt-get install -y tor python3 python3-pip cron haproxy net-tools privoxy python3.11-venv
 
 # Set working directory
 WORKDIR /app
@@ -19,8 +19,10 @@ RUN chmod +x /app/rotate_identity.py
 COPY scripts/startup.sh /app/startup.sh
 RUN chmod +x /app/startup.sh
 
-# Install the stem library using pip3
-RUN pip3 install stem
+# Create a virtual environment and install stem
+RUN python3 -m venv myenv && \
+    . myenv/bin/activate && \
+    pip install stem
 
 # Set up the cron job to rotate the Tor identity
 RUN echo "* * * * * python3 /app/rotate_identity.py >> /var/log/cron.log 2>&1" > tempcronjob && \

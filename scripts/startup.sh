@@ -4,23 +4,23 @@
 NUM_TOR_INSTANCES=${NUM_TOR_INSTANCES:-5}
 
 # Generate a random password and its hashed version
-PASSWORD=$(openssl rand -base64 16)
-HASHED_PASSWORD=$(tor --hash-password "$PASSWORD" | tail -n 1)
+TOR_PASSWORD=$(openssl rand -base64 16)
+HASHED_PASSWORD=$(tor --hash-password "$TOR_PASSWORD" | tail -n 1)
+
+# Set the username and password
+HAPROXY_USERNAME=${HAPROXY_USERNAME:-admin}
+HAPROXY_PASSWORD=${HAPROXY_PASSWORD:-admin}
 
 # Save credentials securely
-echo "Password: $PASSWORD" > /app/credentials.txt
+echo "Password: $TOR_PASSWORD" > /app/credentials.txt
 chmod 600 /app/credentials.txt
 echo "HashedPassword: $HASHED_PASSWORD" >> /app/credentials.txt
 
 # Generate Tor configurations dynamically
-/app/generate_configs.sh $NUM_TOR_INSTANCES $HASHED_PASSWORD
+/app/generate_configs.sh $NUM_TOR_INSTANCES $HASHED_PASSWORD $HAPROXY_USERNAME $HAPROXY_PASSWORD
 
 # Start cron service
 cron
-
-# Clear PID files
-> tor_pids.txt
-> privoxy_pids.txt
 
 # Start multiple Tor and Privoxy instances
 for i in $(seq 0 2 $(($NUM_TOR_INSTANCES * 2 - 2))); do

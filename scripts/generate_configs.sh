@@ -2,14 +2,55 @@
 
 # Set the number of Tor instances; default to 5 if no argument is provided.
 # This sets the number of Tor instances you'll be running.
-NUM_TOR_INSTANCES=${NUM_TOR_INSTANCES:-5}
+NUM_TOR_INSTANCES=$1
 
 # The hashed password for Tor authentication.
 # This password will be used to authenticate against the Tor ControlPort.
 HASHED_PASSWORD=$2
 
+# Set the username and password
+HAPROXY_USERNAME=$3
+HAPROXY_PASSWORD=$4
+
+cat <<EOF > /etc/haproxy/auth-check.lua
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+-- encoding
+local function base64enc(data)
+    return ((data:gsub('.', function(x) 
+        local r, b = '', x:byte()
+        for i = 8, 1, -1 do r = r .. (b % 2 ^ i - b % 2 ^ (i - 1) > 0 and '1' or '0') end
+        return r;
+    end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+        if (#x < 6) then return '' end
+        local c = 0
+        for i = 1, 6 do c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0) end
+        return b:sub(c + 1, c + 1)
+    end)..({ '', '==', '=' })[#data % 3 + 1])
+end
+
+-- auth-check.lua
+function auth_check(txn)
+    local headers = txn.http:req_get_headers()
+    local proxy = headers['proxy-authorization'][0]
+    local expected = 'Basic ' .. base64enc('$HAPROXY_USERNAME:$HAPROXY_PASSWORD')  -- Replace username and password
+    
+    expected = expected:gsub("^%s*(.-)%s*$", "%1")
+    proxy = proxy:gsub("^%s*(.-)%s*$", "%1")
+    
+    if expected == proxy then
+        txn:set_var("txn.auth_successful", true)
+    end
+end
+
+core.register_action("auth_check", { "http-req" }, auth_check)
+EOF
+
 # Initialize the HAProxy configuration with frontend and backend headers.
 cat <<EOF > /etc/haproxy/haproxy.cfg
+global
+    lua-load /etc/haproxy/auth-check.lua  # Update the path as necessary
+
 listen stats
     bind 0.0.0.0:9001
     mode http
@@ -17,7 +58,7 @@ listen stats
     stats hide-version
     stats uri /stats
     stats realm HAProxy\ Statistics
-    stats auth admin:admin
+    stats auth $HAPROXY_USERNAME:$HAPROXY_PASSWORD
     timeout connect 10s
     timeout client  30s
     timeout server  30s
@@ -25,8 +66,10 @@ listen stats
 frontend http_frontend
     bind 0.0.0.0:9000
     mode http
-    default_backend http_backend
     timeout client 50000ms
+    http-request lua.auth_check
+    http-request deny if !{ var(txn.auth_successful) -m bool }
+    default_backend http_backend
 
 backend http_backend
     log global
