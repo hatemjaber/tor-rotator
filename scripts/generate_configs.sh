@@ -51,32 +51,30 @@ cat <<EOF > /etc/haproxy/haproxy.cfg
 global
     lua-load /etc/haproxy/auth-check.lua  # Update the path as necessary
 
+defaults
+    mode http
+    timeout connect 5s
+    timeout client 20s
+    timeout server 20s
+    retries 3
+
 listen stats
     bind 0.0.0.0:9001
-    mode http
     stats enable
     stats hide-version
     stats uri /stats
     stats realm HAProxy\ Statistics
     stats auth $HAPROXY_USERNAME:$HAPROXY_PASSWORD
-    timeout connect 10s
-    timeout client  30s
-    timeout server  30s
 
 frontend http_frontend
     bind 0.0.0.0:9000
-    mode http
-    timeout client 50000ms
     http-request lua.auth_check
     http-request deny if !{ var(txn.auth_successful) -m bool }
     default_backend http_backend
 
 backend http_backend
     log global
-    mode http
     balance roundrobin
-    timeout connect 5000ms
-    timeout server 50000ms
 EOF
 
 # Loop from 0 to NUM_TOR_INSTANCES * 2 - 2, skipping 2 each time.
