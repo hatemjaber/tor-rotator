@@ -2,42 +2,39 @@
 
 ## Description
 
-The Tor Rotator is a Dockerized solution that provides scalable and secure access to the Tor network. Not only does it allow you to rotate your Tor identity through a Python script, but it also lets you scale the number of Tor instances running behind a HAProxy load balancer. This makes it ideal for developers, researchers, and enthusiasts who need anonymity and robustness for their applications.
+The Tor Rotator is a Dockerized solution that provides easy and secure access to the Tor network, allowing you to rotate your Tor identity with a simple Python script. This service is designed for developers, researchers, and enthusiasts who need anonymity and the ability to work with Tor programmatically.
 
 ## Key Features
 
-- **Automated Identity Rotation**: A Python script and cron job allow for automatic rotation of Tor identity.
+- **Automated Identity Rotation**: The service includes a Python script that automates the process of rotating your Tor identity. This is useful for various applications where anonymity is required.
+  
+- **Security**: It generates a hashed control password to secure your Tor instance, ensuring your anonymity and privacy while using Tor.
+  
+- **Environment Variables for Authorization**: You can customize the username and password for the HAProxy instance via environment variables, allowing for easier and more secure deployments.
 
-- **Security**: Automatically generates a hashed control password to secure your Tor instances.
-
-- **Customizable Instance Count**: Choose the number of Tor instances you want to run via an environment variable.
-
-- **Load Balanced**: Sits behind a HAProxy load balancer to distribute the load across multiple Tor instances. (default 5)
-
-- **Open Source**: Extend and customize to suit your specific needs.
+- **Customizable**: The Docker image is built with flexibility in mind, making it easy to configure and integrate into your projects.
+  
+- **Open Source**: This service is open-source, allowing you to customize and extend it to meet your specific needs.
 
 ## Usage
 
-1. Build or pull the Docker image.
-2. Run the container, specifying any environment variables if needed (e.g., the number of Tor instances).
-3. Use the Python script inside the container to programmatically rotate Tor identities.
+1. Pull the Docker image.
+2. Start the container.
+3. Utilize the provided Python script to rotate your Tor identity.
 
-> **Note**: You must have Docker installed to use this service. For detailed instructions and further configuration options, consult the project documentation.
-
-## Docker-Compose Sample
-
-Here's an example `docker-compose.yml` file for deploying the service:
+## Sample Docker-Compose File
 
 ```yaml
 version: '3.9'
+
 services:
   tor-service:
     container_name: tor-service
-    image: hatemjaber/tor-rotator:latest
+    build: .
     ports:
-      - "9000:9000" # Control Port for HAProxy
+      - "0.0.0.0:9000:9000" # HAProxy Port
+      # - "0.0.0.0:9001:9001"
     environment:
-      - NUM_TOR_INSTANCES=7
-```
-
-This configuration lets you specify the number of Tor instances you want to run, which will be load balanced by HAProxy.
+      - NUM_TOR_INSTANCES=2 # Number of Tor instances you want to run; default is 5
+      - HAPROXY_USERNAME=admin # Default value is admin
+      - HAPROXY_PASSWORD=admin # Default value is admin
