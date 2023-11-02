@@ -38,3 +38,10 @@ services:
       - NUM_TOR_INSTANCES=2 # Number of Tor instances you want to run; default is 5
       - HAPROXY_USERNAME=admin # Default value is admin
       - HAPROXY_PASSWORD=admin # Default value is admin
+```
+
+## Sample Usage (change USERNAME:PASSWORD@YOUR-IP-ADDRESS:9000)
+
+```shell
+curl -v --proxy admin:admin@127.0.0.1:9000 http://httpbin.org/ip
+```
