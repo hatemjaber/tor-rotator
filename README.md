@@ -29,8 +29,8 @@ version: '3.9'
 
 services:
   tor-service:
+    image: hatemjaber/tor-rotator
     container_name: tor-service
-    build: .
     ports:
       - "0.0.0.0:9000:9000" # HAProxy Port
       # - "0.0.0.0:9001:9001"
