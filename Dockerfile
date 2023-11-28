@@ -29,8 +29,5 @@ RUN echo "* * * * * python3 /app/rotate_identity.py >> /var/log/cron.log 2>&1" >
     crontab tempcronjob && \
     rm tempcronjob
 
-# Expose the SOCKS proxy port
-EXPOSE 9050
-
 # Command to run the startup script
 CMD ["/app/startup.sh"]
