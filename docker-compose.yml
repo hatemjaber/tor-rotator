@@ -1,9 +1,32 @@
 version: '3.9'
 
 services:
-  tor-service:
-    container_name: tor-service
-    build: .
+  # tor-service:
+  #   container_name: tor-service
+  #   build: .
+  #   ports:
+  #     - "0.0.0.0:9000:9000" # HAProxy Port
+  #     # - "0.0.0.0:9001:9001"
+  #   environment:
+  #     - NUM_TOR_INSTANCES=2 # Number of Tor instances you want to run default is 5
+  #     - HAPROXY_USERNMAE=admin # default value is admin
+  #     - HAPROXY_PASSWORD=admin # default value is admin
+  #     - HAPROXY_TIMEOUT_CONNECT=10s
+  #     - HAPROXY_TIMEOUT_CLIENT=30s
+  #     - HAPROXY_TIMEOUT_SERVER=30s
+  #     - HAPROXY_RETRIES=3
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '2.0' # e.g., 2 CPU cores
+  #         memory: 2G  # e.g., 2 GB RAM
+  #       reservations:
+  #         cpus: '0.5' # e.g., reserve 0.5 CPU cores
+  #         memory: 512M # e.g., reserve 512 MB RAM
+  tor-rotator:
+    image: hatemjaber/tor-rotator:1.3.9
+    container_name: tor-rotator
+    hostname: tor-rotator
     ports:
       - "0.0.0.0:9000:9000" # HAProxy Port
       # - "0.0.0.0:9001:9001"
@@ -15,3 +38,11 @@ services:
       - HAPROXY_TIMEOUT_CLIENT=30s
       - HAPROXY_TIMEOUT_SERVER=30s
       - HAPROXY_RETRIES=3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0' # e.g., 2 CPU cores
+          memory: 2G  # e.g., 2 GB RAM
+        reservations:
+          cpus: '0.5' # e.g., reserve 0.5 CPU cores
+          memory: 512M # e.g., reserve 512 MB RAM

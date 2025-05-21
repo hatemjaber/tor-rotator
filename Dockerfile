@@ -1,8 +1,19 @@
 # Use Debian Bookworm Slim as the base image
 FROM debian:bookworm-slim
 
-# Install necessary packages: Tor, Python3, pip for Python3, cron, and haproxy
-RUN apt-get update -y && apt-get install -y \
+# Set environment variables for non-interactive apt-get and Python unbuffered output
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Install necessary packages: Tor, Python3, pip, python3-venv, cron, haproxy, privoxy, net-tools.
+# - tor, python3, pip, python3-venv, cron: Core for Tor and rotation.
+# - haproxy, privoxy: Essential for the internal proxy/load balancing chain as per your design.
+# - net-tools: Kept as in your original; useful for debugging ifconfig/netstat, though 'ip' command is usually preferred.
+# Use --no-install-recommends to reduce image size by avoiding unnecessary packages.
+# Clean up apt caches immediately after installation (in the same RUN layer)
+# to reduce the final image size and improve caching efficiency.
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
     tor \
     python3 \
     python3-pip \
@@ -10,32 +21,45 @@ RUN apt-get update -y && apt-get install -y \
     cron \
     haproxy \
     net-tools \
-    privoxy
+    privoxy \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Set working directory for the application
 WORKDIR /app
 
-# Copy the script to generate Tor configurations
-COPY scripts/generate_configs.sh /app/generate_configs.sh
-RUN chmod +x /app/generate_configs.sh
+# Create a Python virtual environment and install 'stem'.
+# The venv ensures 'stem' and its dependencies are isolated.
+RUN python3 -m venv /app/myenv && \
+    /app/myenv/bin/pip install stem
 
-# Add the Python script for rotating identity
+# Create a dedicated directory for dynamically generated configuration files.
+# Your 'generate_configs.sh' script will write torrc, privoxy.conf, and haproxy.cfg here.
+RUN mkdir -p /app/configs
+
+# Copy all application scripts into the container.
+# This includes generate_configs.sh, rotate_identity.py, and startup.sh.
+COPY scripts/generate_configs.sh /app/
 COPY scripts/rotate_identity.py /app/
-RUN chmod +x /app/rotate_identity.py
+COPY scripts/startup.sh /app/
 
-# Add a startup script to start services
-COPY scripts/startup.sh /app/startup.sh
-RUN chmod +x /app/startup.sh
+# Make the copied scripts executable.
+RUN chmod +x /app/generate_configs.sh \
+    /app/rotate_identity.py \
+    /app/startup.sh
 
-# Create a virtual environment and install stem
-RUN python3 -m venv myenv && \
-    . myenv/bin/activate && \
-    pip install stem
+# Set up the cron job for identity rotation.
+# Using /etc/cron.d/ for system-wide cron jobs is more robust.
+# Specify the full path to the Python interpreter within the virtual environment.
+# Redirect output to /dev/stdout for Docker's native logging system.
+RUN echo "* * * * * root /app/myenv/bin/python /app/rotate_identity.py >> /dev/stdout 2>&1" > /etc/cron.d/rotate-tor-identity && \
+    chmod 0644 /etc/cron.d/rotate-tor-identity
 
-# Set up the cron job to rotate the Tor identity
-RUN echo "* * * * * python3 /app/rotate_identity.py >> /var/log/cron.log 2>&1" > tempcronjob && \
-    crontab tempcronjob && \
-    rm tempcronjob
+# Expose the primary HAProxy port as defined in your docker-compose.yml.
+# This makes it explicit which port the container listens on for external traffic.
+EXPOSE 9000 9001
 
-# Command to run the startup script
+# Command to run the startup script.
+# This script will manage launching all internal services (Tor, Privoxy, HAProxy, Cron).
 CMD ["/app/startup.sh"]
