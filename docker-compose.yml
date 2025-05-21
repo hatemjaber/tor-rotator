@@ -11,3 +11,7 @@ services:
       - NUM_TOR_INSTANCES=2 # Number of Tor instances you want to run default is 5
       - HAPROXY_USERNMAE=admin # default value is admin
       - HAPROXY_PASSWORD=admin # default value is admin
+      - HAPROXY_TIMEOUT_CONNECT=10s
+      - HAPROXY_TIMEOUT_CLIENT=30s
+      - HAPROXY_TIMEOUT_SERVER=30s
+      - HAPROXY_RETRIES=3

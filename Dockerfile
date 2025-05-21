@@ -1,8 +1,16 @@
-# Use Debian Buster Slim as the base image
+# Use Debian Bookworm Slim as the base image
 FROM debian:bookworm-slim
 
 # Install necessary packages: Tor, Python3, pip for Python3, cron, and haproxy
-RUN apt-get update && apt-get install -y tor python3 python3-pip cron haproxy net-tools privoxy python3.11-venv
+RUN apt-get update -y && apt-get install -y \
+    tor \
+    python3 \
+    python3-pip \
+    python3-venv \
+    cron \
+    haproxy \
+    net-tools \
+    privoxy
 
 # Set working directory
 WORKDIR /app

@@ -10,6 +10,10 @@ HASHED_PASSWORD=$(tor --hash-password "$TOR_PASSWORD" | tail -n 1)
 # Set the username and password
 HAPROXY_USERNAME=${HAPROXY_USERNAME:-admin}
 HAPROXY_PASSWORD=${HAPROXY_PASSWORD:-admin}
+HAPROXY_TIMEOUT_CONNECT=${HAPROXY_TIMEOUT_CONNECT:-5s}
+HAPROXY_TIMEOUT_CLIENT=${HAPROXY_TIMEOUT_CLIENT:-20s}
+HAPROXY_TIMEOUT_SERVER=${HAPROXY_TIMEOUT_SERVER:-20s}
+HAPROXY_RETRIES=${HAPROXY_RETRIES:-3}
 
 # Save credentials securely
 echo "Password: $TOR_PASSWORD" > /app/credentials.txt
@@ -17,7 +21,7 @@ chmod 600 /app/credentials.txt
 echo "HashedPassword: $HASHED_PASSWORD" >> /app/credentials.txt
 
 # Generate Tor configurations dynamically
-/app/generate_configs.sh $NUM_TOR_INSTANCES $HASHED_PASSWORD $HAPROXY_USERNAME $HAPROXY_PASSWORD
+/app/generate_configs.sh $NUM_TOR_INSTANCES $HASHED_PASSWORD $HAPROXY_USERNAME $HAPROXY_PASSWORD $HAPROXY_TIMEOUT_CONNECT $HAPROXY_TIMEOUT_CLIENT $HAPROXY_TIMEOUT_SERVER $HAPROXY_RETRIES
 
 # Start cron service
 cron

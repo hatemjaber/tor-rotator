@@ -11,6 +11,10 @@ HASHED_PASSWORD=$2
 # Set the username and password
 HAPROXY_USERNAME=$3
 HAPROXY_PASSWORD=$4
+HAPROXY_TIMEOUT_CONNECT=$5
+HAPROXY_TIMEOUT_CLIENT=$6
+HAPROXY_TIMEOUT_SERVER=$7
+HAPROXY_RETRIES=$8
 
 cat <<EOF > /etc/haproxy/auth-check.lua
 local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -53,10 +57,10 @@ global
 
 defaults
     mode http
-    timeout connect 5s
-    timeout client 20s
-    timeout server 20s
-    retries 3
+    timeout connect $HAPROXY_TIMEOUT_CONNECT
+    timeout client $HAPROXY_TIMEOUT_CLIENT
+    timeout server $HAPROXY_TIMEOUT_SERVER
+    retries $HAPROXY_RETRIES
 
 listen stats
     bind 0.0.0.0:9001
