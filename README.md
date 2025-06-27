@@ -63,8 +63,9 @@ services:
     image: hatemjaber/tor-rotator
     container_name: tor-service
     ports:
-      - "0.0.0.0:9000:9000" # HAProxy Port
+      - "0.0.0.0:9000:9000" # HAProxy Port with user auth admin:admin@127.0.0.1:9000
     # - "0.0.0.0:9001:9001"
+    # - "0.0.0.0:9002:9002" # HAProxy Port without user auth 127.0.0.1:9002
     environment:
       - NUM_TOR_INSTANCES=2 # Number of Tor instances you want to run; default is 5
       - HAPROXY_USERNAME=admin # Default value is admin
