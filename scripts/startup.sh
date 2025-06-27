@@ -24,6 +24,9 @@ HAPROXY_TIMEOUT_CLIENT=${HAPROXY_TIMEOUT_CLIENT:-20s}
 HAPROXY_TIMEOUT_SERVER=${HAPROXY_TIMEOUT_SERVER:-20s}
 HAPROXY_RETRIES=${HAPROXY_RETRIES:-3}
 
+# Set rotation interval with default of 5 minutes
+ROTATION_INTERVAL_MINUTES=${ROTATION_INTERVAL_MINUTES:-5}
+
 # Save credentials securely. This is good for debugging/accessing later if needed.
 # Ensure /app/credentials.txt is readable *only* by root.
 echo "Password: $TOR_PASSWORD" > /app/credentials.txt
@@ -31,6 +34,35 @@ chmod 600 /app/credentials.txt
 echo "Tor Hashed Password: $HASHED_PASSWORD" >> /app/credentials.txt
 echo "HAProxy Username: $HAPROXY_USERNAME" >> /app/credentials.txt
 echo "HAProxy Password: $HAPROXY_PASSWORD" >> /app/credentials.txt
+
+# --- Dynamic Cron Job Creation ---
+
+# Create the cron job dynamically based on the environment variable
+if [ "$ROTATION_INTERVAL_MINUTES" -eq 1 ]; then
+    CRON_SCHEDULE="* * * * *"
+elif [ "$ROTATION_INTERVAL_MINUTES" -eq 5 ]; then
+    CRON_SCHEDULE="*/5 * * * *"
+elif [ "$ROTATION_INTERVAL_MINUTES" -eq 10 ]; then
+    CRON_SCHEDULE="*/10 * * * *"
+elif [ "$ROTATION_INTERVAL_MINUTES" -eq 15 ]; then
+    CRON_SCHEDULE="*/15 * * * *"
+elif [ "$ROTATION_INTERVAL_MINUTES" -eq 30 ]; then
+    CRON_SCHEDULE="*/30 * * * *"
+elif [ "$ROTATION_INTERVAL_MINUTES" -eq 60 ]; then
+    CRON_SCHEDULE="0 * * * *"
+else
+    # For custom intervals, calculate the cron expression
+    if [ $((60 % ROTATION_INTERVAL_MINUTES)) -eq 0 ]; then
+        CRON_SCHEDULE="*/$ROTATION_INTERVAL_MINUTES * * * *"
+    else
+        echo "Warning: Custom rotation interval $ROTATION_INTERVAL_MINUTES minutes may not work perfectly with cron"
+        CRON_SCHEDULE="*/5 * * * *"  # Fallback to 5 minutes
+    fi
+fi
+
+echo "Setting rotation interval to $ROTATION_INTERVAL_MINUTES minutes (cron: $CRON_SCHEDULE)"
+echo "$CRON_SCHEDULE root /app/myenv/bin/python /app/rotate_identity.py >> /dev/stdout 2>&1" > /etc/cron.d/rotate-tor-identity
+chmod 0644 /etc/cron.d/rotate-tor-identity
 
 # --- Configuration Generation ---
 

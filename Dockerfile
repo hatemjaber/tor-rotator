@@ -49,12 +49,8 @@ RUN chmod +x /app/generate_configs.sh \
     /app/rotate_identity.py \
     /app/startup.sh
 
-# Set up the cron job for identity rotation.
-# Using /etc/cron.d/ for system-wide cron jobs is more robust.
-# Specify the full path to the Python interpreter within the virtual environment.
-# Redirect output to /dev/stdout for Docker's native logging system.
-RUN echo "* * * * * root /app/myenv/bin/python /app/rotate_identity.py >> /dev/stdout 2>&1" > /etc/cron.d/rotate-tor-identity && \
-    chmod 0644 /etc/cron.d/rotate-tor-identity
+# Set up environment variable for rotation interval with default of 5 minutes
+RUN echo "ROTATION_INTERVAL_MINUTES=\${ROTATION_INTERVAL_MINUTES:-5}" >> /etc/environment
 
 # Expose the primary HAProxy port as defined in your docker-compose.yml.
 # This makes it explicit which port the container listens on for external traffic.

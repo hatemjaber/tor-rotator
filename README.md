@@ -39,15 +39,16 @@ who need anonymity and the ability to work with Tor programmatically.
 
 The following environment variables can be configured:
 
-| Variable                  | Description                         | Default |
-| ------------------------- | ----------------------------------- | ------- |
-| `NUM_TOR_INSTANCES`       | Number of Tor instances to run      | 5       |
-| `HAPROXY_USERNAME`        | Username for HAProxy authentication | admin   |
-| `HAPROXY_PASSWORD`        | Password for HAProxy authentication | admin   |
-| `HAPROXY_TIMEOUT_CONNECT` | Time to establish a connection      | 5s      |
-| `HAPROXY_TIMEOUT_CLIENT`  | Time for client inactivity          | 20s     |
-| `HAPROXY_TIMEOUT_SERVER`  | Time for server inactivity          | 20s     |
-| `HAPROXY_RETRIES`         | Number of connection retries        | 3       |
+| Variable                    | Description                          | Default |
+| --------------------------- | ------------------------------------ | ------- |
+| `NUM_TOR_INSTANCES`         | Number of Tor instances to run       | 5       |
+| `HAPROXY_USERNAME`          | Username for HAProxy authentication  | admin   |
+| `HAPROXY_PASSWORD`          | Password for HAProxy authentication  | admin   |
+| `HAPROXY_TIMEOUT_CONNECT`   | Time to establish a connection       | 5s      |
+| `HAPROXY_TIMEOUT_CLIENT`    | Time for client inactivity           | 20s     |
+| `HAPROXY_TIMEOUT_SERVER`    | Time for server inactivity           | 20s     |
+| `HAPROXY_RETRIES`           | Number of connection retries         | 3       |
+| `ROTATION_INTERVAL_MINUTES` | Identity rotation interval (minutes) | 5       |
 
 Note: For Tor connections, you might want to increase the timeout values as Tor
 connections can be slower than regular connections.
@@ -72,6 +73,7 @@ services:
       - HAPROXY_TIMEOUT_CLIENT=60s # Increased client timeout
       - HAPROXY_TIMEOUT_SERVER=60s # Increased server timeout
       - HAPROXY_RETRIES=3 # Number of retries
+      - ROTATION_INTERVAL_MINUTES=10 # Rotate identity every 10 minutes
 ```
 
 ## Sample Usage (change USERNAME:PASSWORD@YOUR-IP-ADDRESS:9000)
