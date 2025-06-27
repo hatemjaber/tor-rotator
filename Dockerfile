@@ -54,7 +54,7 @@ RUN echo "ROTATION_INTERVAL_MINUTES=\${ROTATION_INTERVAL_MINUTES:-5}" >> /etc/en
 
 # Expose the primary HAProxy port as defined in your docker-compose.yml.
 # This makes it explicit which port the container listens on for external traffic.
-EXPOSE 9000 9001
+EXPOSE 9000 9001 9002
 
 # Command to run the startup script.
 # This script will manage launching all internal services (Tor, Privoxy, HAProxy, Cron).

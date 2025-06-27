@@ -70,10 +70,16 @@ listen stats
     stats realm HAProxy\ Statistics
     stats auth $HAPROXY_USERNAME:$HAPROXY_PASSWORD
 
-frontend http_frontend
+# --- SECURE FRONTEND (with authentication, port 9000) ---
+frontend secure_frontend
     bind 0.0.0.0:9000
     http-request lua.auth_check
     http-request deny if !{ var(txn.auth_successful) -m bool }
+    default_backend http_backend
+
+# --- FRONTEND (no authentication, port 9002) ---
+frontend frontend
+    bind 0.0.0.0:9002
     default_backend http_backend
 
 backend http_backend
